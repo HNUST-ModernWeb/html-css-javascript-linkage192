@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>个人信息卡片 | 动态编辑与保存</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Poppins', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 550px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.75rem;
+            color: #1e2f4e;
+            letter-spacing: -0.3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .profile-card {
+            background-color: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 2rem 1.8rem;
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+        }
+
+        .profile-card:hover {
+            box-shadow: 0 25px 40px -14px rgba(0, 0, 0, 0.25);
+            transform: translateY(-3px);
+        }
+
+        /* 头像区域 - 圆形居中 */
+        .avatar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background-color: #f0f2f5;
+        }
+
+        .upload-label {
+            margin-top: 0.85rem;
+            cursor: pointer;
+            background-color: #f0f4f9;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #2c3e66;
+            transition: all 0.25s;
+            border: 1px solid #dce5f2;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .upload-label:hover {
+            background-color: #e6edf6;
+            border-color: #b0c4de;
+            color: #0f2b3d;
+            transform: scale(0.97);
+        }
+
+        #avatarUpload {
+            display: none;
+        }
+
+        /* 展示区 */
+        .info-showcase {
+            text-align: center;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .display-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+            background: linear-gradient(135deg, #1e2f4e 0%, #2c3e66 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .display-bio {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #4a5b6e;
+            background: #f8fafc;
+            padding: 0.8rem 1rem;
+            border-radius: 1.2rem;
+            margin-top: 0.5rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid #ecf3fa;
+        }
+
+        /* 编辑表单 */
+        .edit-area {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-left: 0.2rem;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            border: 1.5px solid #e2edf7;
+            border-radius: 1.2rem;
+            padding: 0.7rem 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.25s;
+            background-color: #ffffff;
+            outline: none;
+            resize: vertical;
+            color: #1f2f40;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            border-color: #7c9bc0;
+            box-shadow: 0 0 0 3px rgba(100, 140, 180, 0.2);
+        }
+
+        .save-btn {
+            background: linear-gradient(105deg, #2c3e66, #1f3a57);
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.2);
+            margin-top: 0.6rem;
+        }
+
+        .save-btn:hover {
+            background: linear-gradient(105deg, #1f3557, #14273f);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 18px -8px rgba(0, 0, 0, 0.25);
+        }
+
+        .save-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* 临时提示 */
+        .toast-msg {
+            visibility: hidden;
+            min-width: 160px;
+            background-color: #2c3e66e6;
+            color: #fff;
+            text-align: center;
+            border-radius: 40px;
+            padding: 0.5rem 1rem;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast-msg.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (max-width: 500px) {
+            .profile-card { padding: 1.5rem; }
+            .display-name { font-size: 1.5rem; }
+            .page-title { font-size: 1.7rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="page-title">✨ 个人信息卡片 ✨</h1>
+    <div class="profile-card">
+        <!-- 头像 + 上传控件 -->
+        <div class="avatar-wrapper">
+            <img id="avatarImg" class="avatar-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle fill='%23849cba' cx='50' cy='50' r='50'/%3E%3Ctext fill='%23ffffff' x='50' y='67' text-anchor='middle' font-size='42' font-family='Arial'%3E👤%3C/text%3E%3C/svg%3E"
+                 alt="个人头像">
+            <label for="avatarUpload" class="upload-label">📷 更换头像</label>
+            <input type="file" id="avatarUpload" accept="image/jpeg, image/png, image/jpg, image/webp">
+        </div>
+
+        <!-- 展示卡片内容 -->
+        <div class="info-showcase">
+            <div class="display-name" id="displayName">黎里</div>
+            <div class="display-bio" id="displayBio">一个学计算机的大学生</div>
+        </div>
+
+        <!-- 编辑区域 + 保存按钮 -->
+        <div class="edit-area">
+            <div class="input-group">
+                <label>✏️ 编辑姓名</label>
+                <input type="text" id="nameInput" placeholder="输入姓名" value="黎里">
+            </div>
+            <div class="input-group">
+                <label>📝 编辑个人简介</label>
+                <textarea id="bioInput" rows="3" placeholder="写一段自我介绍...">一个学计算机的大学生</textarea>
+            </div>
+            <button class="save-btn" id="saveBtn">💾 保存修改</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg">✔️ 已更新个人信息</div>
+
+<script>
+    (function() {
+        // ----- DOM 元素 -----
+        const avatarImg = document.getElementById('avatarImg');
+        const avatarUpload = document.getElementById('avatarUpload');
+        const displayNameElem = document.getElementById('displayName');
+        const displayBioElem = document.getElementById('displayBio');
+        const nameInput = document.getElementById('nameInput');
+        const bioInput = document.getElementById('bioInput');
+        const saveBtn = document.getElementById('saveBtn');
+        const toast = document.getElementById('toastMsg');
+
+        // ----- localStorage 键名 -----
+        const STORAGE_NAME_KEY = 'profile_name';
+        const STORAGE_BIO_KEY = 'profile_bio';
+        const STORAGE_AVATAR_KEY = 'profile_avatar';
+
+        // ----- 默认数据（按要求：黎里 / 一个学计算机的大学生）-----
+        const DEFAULT_AVATAR_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle fill='%23849cba' cx='50' cy='50' r='50'/%3E%3Ctext fill='%23ffffff' x='50' y='67' text-anchor='middle' font-size='42' font-family='Arial'%3E👤%3C/text%3E%3C/svg%3E";
+        const DEFAULT_NAME = "黎里";
+        const DEFAULT_BIO = "一个学计算机的大学生";
+
+        // ----- 辅助：显示短暂提示 -----
+        let toastTimer = null;
+        function showToast(message = '✔️ 已更新个人信息') {
+            if (toastTimer) clearTimeout(toastTimer);
+            toast.textContent = message;
+            toast.classList.add('show');
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1800);
+        }
+
+        // ----- 将输入框内容同步到展示区（卡片显示）-----
+        function updateDisplayFromInputs() {
+            let newName = nameInput.value.trim();
+            let newBio = bioInput.value;
+
+            displayNameElem.textContent = newName === "" ? "未填写姓名" : newName;
+            displayBioElem.textContent = newBio === "" ? "暂无简介，点击编辑添加~" : newBio;
+        }
+
+        // ----- 保存数据到 localStorage -----
+        function saveToLocalStorage() {
+            let currentName = displayNameElem.textContent;
+            let currentBio = displayBioElem.textContent;
+            // 占位符内容转存为空字符串
+            let saveName = (currentName === "未填写姓名") ? "" : currentName;
+            let saveBio = (currentBio === "暂无简介，点击编辑添加~") ? "" : currentBio;
+            localStorage.setItem(STORAGE_NAME_KEY, saveName);
+            localStorage.setItem(STORAGE_BIO_KEY, saveBio);
+        }
+
+        // ----- 保存头像为 base64 到 localStorage -----
+        function saveAvatarToLocalStorage(dataUrl) {
+            localStorage.setItem(STORAGE_AVATAR_KEY, dataUrl);
+        }
+
+        // ----- 从 localStorage 加载数据并渲染 -----
+        function loadFromLocalStorage() {
+            const savedName = localStorage.getItem(STORAGE_NAME_KEY);
+            const savedBio = localStorage.getItem(STORAGE_BIO_KEY);
+            const savedAvatar = localStorage.getItem(STORAGE_AVATAR_KEY);
+
+            // 姓名
+            if (savedName !== null) {
+                if (savedName === "") {
+                    displayNameElem.textContent = "未填写姓名";
+                    nameInput.value = "";
+                } else {
+                    displayNameElem.textContent = savedName;
+                    nameInput.value = savedName;
+                }
+            } else {
+                displayNameElem.textContent = DEFAULT_NAME;
+                nameInput.value = DEFAULT_NAME;
+            }
+
+            // 简介
+            if (savedBio !== null) {
+                if (savedBio === "") {
+                    displayBioElem.textContent = "暂无简介，点击编辑添加~";
+                    bioInput.value = "";
+                } else {
+                    displayBioElem.textContent = savedBio;
+                    bioInput.value = savedBio;
+                }
+            } else {
+                displayBioElem.textContent = DEFAULT_BIO;
+                bioInput.value = DEFAULT_BIO;
+            }
+
+            // 头像
+            if (savedAvatar && savedAvatar !== DEFAULT_AVATAR_SVG) {
+                avatarImg.src = savedAvatar;
+            } else {
+                avatarImg.src = DEFAULT_AVATAR_SVG;
+            }
+        }
+
+        // ----- 保存按钮逻辑：更新卡片并持久化 -----
+        function onSave() {
+            updateDisplayFromInputs();      // 将编辑区内容写入展示区
+            saveToLocalStorage();           // 持久化姓名/简介
+            showToast('✨ 个人信息已保存 ✨');
+
+            // 保证编辑框内容与展示区完全一致（处理占位符情况）
+            const finalDisplayName = displayNameElem.textContent;
+            const finalDisplayBio = displayBioElem.textContent;
+            nameInput.value = (finalDisplayName === "未填写姓名") ? "" : finalDisplayName;
+            bioInput.value = (finalDisplayBio === "暂无简介，点击编辑添加~") ? "" : finalDisplayBio;
+        }
+
+        // ----- 头像上传：转换为 base64 并永久保存 -----
+        function updateAvatarWithFile(file) {
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showToast('⚠️ 请选择图片文件 (jpg/png/webp)');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('📸 图片过大，请选择小于5MB的图片');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                avatarImg.src = dataUrl;
+                saveAvatarToLocalStorage(dataUrl);
+                showToast('🖼️ 头像已更新并保存');
+            };
+            reader.onerror = () => showToast('头像上传失败，请重试');
+            reader.readAsDataURL(file);
+        }
+
+        // ----- 事件绑定 -----
+        avatarUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) updateAvatarWithFile(file);
+            avatarUpload.value = ''; // 允许重复上传同一文件
+        });
+
+        // 头像加载失败时回退默认图
+        avatarImg.onerror = function() {
+            if (avatarImg.src !== DEFAULT_AVATAR_SVG) {
+                avatarImg.src = DEFAULT_AVATAR_SVG;
+            }
+        };
+
+        saveBtn.addEventListener('click', onSave);
+        // 按回车保存姓名（简介不拦截，保留换行）
+        nameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                onSave();
+            }
+        });
+
+        // ----- 初始化：加载已有数据，若无则使用默认值并存储 -----
+        loadFromLocalStorage();
+        if (localStorage.getItem(STORAGE_NAME_KEY) === null) {
+            saveToLocalStorage();
+        }
+        if (localStorage.getItem(STORAGE_AVATAR_KEY) === null) {
+            saveAvatarToLocalStorage(DEFAULT_AVATAR_SVG);
+        }
+    })();
+</script>
+</body>
+</html>
